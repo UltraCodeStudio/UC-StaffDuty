@@ -32,10 +32,8 @@ CreateThread(function()
             if ped ~= 0 and DoesEntityExist(ped) then
                 local coords = GetEntityCoords(ped)
                 local dist = #(myCoords - coords)
-
                 if dist < 25.0 then
-                    local staffData = Entity(ped).state['UC-StaffDuty']
-
+                    local staffData = Entity(ped).state['UC-StaffDuty:Duty']
                     if staffData and staffData.enabled then
                         newCache[ped] = {
                             group = staffData.group or 'Unknown',
@@ -75,4 +73,20 @@ CreateThread(function()
         end
         Wait(sleep)
     end
+end)
+
+AddStateBagChangeHandler("UC-StaffDuty:Effects", nil, function(bagName, key, value) 
+    
+    local entity = GetEntityFromStateBagName(bagName)
+    if entity == 0 then return end
+    
+    --SetEntityAlpha(entity, value.alpha, value.invincible)
+    SetEntityInvincible(entity, value.invincible)
+    TaskSetBlockingOfNonTemporaryEvents(entity, value.invincible)
+    SetPedCanRagdoll(entity, value.invincible)
+    SetEntityCanBeDamaged(entity, value.invincible)
+    SetEveryoneIgnorePlayer(entity, value.invincible)
+    SetPoliceIgnorePlayer(entity, value.invincible)
+    SetLocalPlayerAsGhost(value.invincible)
+    NetworkSetEntityGhostedWithOwner(entity, value.invincible)
 end)

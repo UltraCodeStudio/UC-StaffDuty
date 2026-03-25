@@ -163,7 +163,7 @@ local function ApplyIcon(src, group)
     local ped = GetPlayerPed(src)
     if ped == 0 then return end
 
-    Entity(ped).state:set('UC-StaffDuty', {
+    Entity(ped).state:set('UC-StaffDuty:Duty', {
         enabled = true,
         group = group
     }, true)
@@ -174,9 +174,29 @@ local function RemoveIcon(src)
     local ped = GetPlayerPed(src)
     if ped == 0 then return end
 
-    Entity(ped).state:set('UC-StaffDuty', {
+    Entity(ped).state:set('UC-StaffDuty:Duty', {
         enabled = false,
         group = nil
+    }, true)
+end
+
+local function RemovePlayerEffects(src)
+    SetPlayerInvincible(src, false)
+    local ped = GetPlayerPed(src)
+    Entity(ped).state:set('UC-StaffDuty:Effects', {
+        alpha = 255,
+        invincible = false,
+        collision = true
+    }, true)
+end
+
+local function ApplyPlayerEffects(src)
+    SetPlayerInvincible(src, true)
+    local ped = GetPlayerPed(src)
+    Entity(ped).state:set('UC-StaffDuty:Effects', {
+        alpha = 102,
+        invincible = true,
+        collision = false
     }, true)
 end
 
@@ -197,13 +217,15 @@ local function setOnDuty(src, groups)
         removeStoredGroup(dutyKey, group)
         ApplyOutfit(src,groupToAce(group))
         ApplyIcon(src, groupToAce(group))
+        ApplyPlayerEffects(src)
     end
 end
 
 
 ---@param src number
 ---@param groups string[]
-local function setOffDuty(src, groups)
+local function setOffDuty(src, groups, keep)
+    store = store or true
     local dutyKey = getDutyKey(src)
     if not dutyKey then return end
     if not groups or #groups == 0 then return end
@@ -217,9 +239,13 @@ local function setOffDuty(src, groups)
 
         if IsPlayerAceAllowed(src, ace) then
             storeGroup(dutyKey, group)
-            removeGroupFromPrincipals(principals, group)
+            
+            if not keep then
+                removeGroupFromPrincipals(principals, group)
+            end
             TriggerClientEvent("illenium-appearance:client:reloadSkin", src)
             RemoveIcon(src)
+            RemovePlayerEffects(src)
             return
         end
     end
@@ -305,10 +331,14 @@ AddEventHandler('playerDropped', function()
 end)
 
 AddEventHandler('onResourceStart', function(resourceName)
+    
+    
+    
     if resourceName ~= GetCurrentResourceName() then return end
     for _, playerId in ipairs(GetPlayers()) do
         initStaffState(tonumber(playerId))
     end
+    
     
     
 end)
@@ -318,6 +348,9 @@ AddEventHandler('onResourceStop', function(resourceName)
 
     for _, playerId in ipairs(GetPlayers()) do
         restoreStoredGroups(tonumber(playerId))
+        if not isOffDuty(tonumber(playerId)) then
+            setOffDuty(tonumber(playerId), dutyGroups, true)
+        end
     end
 end)
 
