@@ -1,5 +1,6 @@
 Config = {}
 
+Config.EnableFloatingText = true
 --These are your staff ace roles
 Config.dutyGroups = {
     'group.god',

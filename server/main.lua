@@ -158,6 +158,29 @@ local function removeGroupFromPrincipals(principals, group)
 end
 
 ---@param src number
+local function ApplyIcon(src, group)
+    
+    local ped = GetPlayerPed(src)
+    if ped == 0 then return end
+
+    Entity(ped).state:set('UC-StaffDuty', {
+        enabled = true,
+        group = group
+    }, true)
+end
+
+---@param src number
+local function RemoveIcon(src)
+    local ped = GetPlayerPed(src)
+    if ped == 0 then return end
+
+    Entity(ped).state:set('UC-StaffDuty', {
+        enabled = false,
+        group = nil
+    }, true)
+end
+
+---@param src number
 ---@param groups string[]
 local function setOnDuty(src, groups)
 
@@ -173,8 +196,10 @@ local function setOnDuty(src, groups)
         addGroupToPrincipals(principals, group)
         removeStoredGroup(dutyKey, group)
         ApplyOutfit(src,groupToAce(group))
+        ApplyIcon(src, groupToAce(group))
     end
 end
+
 
 ---@param src number
 ---@param groups string[]
@@ -194,6 +219,7 @@ local function setOffDuty(src, groups)
             storeGroup(dutyKey, group)
             removeGroupFromPrincipals(principals, group)
             TriggerClientEvent("illenium-appearance:client:reloadSkin", src)
+            RemoveIcon(src)
             return
         end
     end
