@@ -21,6 +21,7 @@ end
 
 ---@type table<number, { group: string, offset: number }>
 local staffPeds = {}
+
 CreateThread(function()
     while Config.EnableFloatingText do
         local myPed = PlayerPedId()
@@ -78,6 +79,8 @@ AddStateBagChangeHandler("UC-StaffDuty:Effects", nil, function(bagName, key, val
     
     local entity = GetEntityFromStateBagName(bagName)
     if entity == 0 then return end
+    
+    --SetEntityAlpha(entity, value.alpha, value.invincible)
     SetEntityInvincible(entity, value.invincible)
     TaskSetBlockingOfNonTemporaryEvents(entity, value.invincible)
     SetPedCanRagdoll(entity, value.invincible)
