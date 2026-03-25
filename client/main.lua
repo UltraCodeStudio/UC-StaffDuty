@@ -8,46 +8,71 @@
 local function DrawText3D(x, y, z, text, scale)
     local onScreen, screenX, screenY = World3dToScreen2d(x, y, z)
     if not onScreen then return end
-
     scale = scale or 0.35
-
     SetTextScale(scale, scale)
     SetTextFont(4)
     SetTextProportional(true)
     SetTextCentre(true)
     SetTextColour(255, 0, 0, 255)
-    SetTextOutline()
-
     BeginTextCommandDisplayText('STRING')
     AddTextComponentSubstringPlayerName(text)
     EndTextCommandDisplayText(screenX, screenY)
 end
 
+---@type table<number, { group: string, offset: number }>
+local staffPeds = {}
+
 CreateThread(function()
-    while true do
-        if not Config.EnableFloatingText then break end
-        local waitTime = 1000
+    while Config.EnableFloatingText do
         local myPed = PlayerPedId()
         local myCoords = GetEntityCoords(myPed)
-
+        local newCache = {}
         for _, player in ipairs(GetActivePlayers()) do
             local ped = GetPlayerPed(player)
-
             if ped ~= 0 and DoesEntityExist(ped) then
-                local staffData = Entity(ped).state['UC-StaffDuty']
+                local coords = GetEntityCoords(ped)
+                local dist = #(myCoords - coords)
 
-                if staffData and staffData.enabled then
-                    local coords = GetEntityCoords(ped)
-                    local dist = #(myCoords - coords)
+                if dist < 25.0 then
+                    local staffData = Entity(ped).state['UC-StaffDuty']
 
-                    if dist < 20.0 then
-                        waitTime = 0
-                        DrawText3D(coords.x, coords.y, coords.z + 1.25, ('STAFF | %s'):format(staffData.group or 'Unknown'), 0.8)
+                    if staffData and staffData.enabled then
+                        newCache[ped] = {
+                            group = staffData.group or 'Unknown',
+                            offset = 1.25
+                        }
                     end
                 end
             end
         end
+        staffPeds = newCache
+        Wait(1000)
+    end
+    staffPeds = {}
+end)
 
-        Wait(waitTime)
+CreateThread(function()
+    while Config.EnableFloatingText do
+        local sleep = 500
+        local hasDrawn = false
+        for ped, data in pairs(staffPeds) do
+            if DoesEntityExist(ped) then
+                local coords = GetEntityCoords(ped)
+                DrawText3D(
+                    coords.x,
+                    coords.y,
+                    coords.z + data.offset,
+                    ('STAFF | %s'):format(data.group),
+                    0.8
+                )
+                hasDrawn = true
+            else
+                staffPeds[ped] = nil
+            end
+        end
+        if hasDrawn then
+            sleep = 4
+        end
+        Wait(sleep)
     end
 end)
