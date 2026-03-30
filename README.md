@@ -16,6 +16,7 @@ https://github.com/UltraCodeStudio/UC-StaffDuty/releases/latest
 - 🔈 Staff Tags
 - 👻  Ghost Mode (Passive Mode)
 - 🛍️ Uses player Ace's 
+- 👕 Staff Outfits
 
 ## ⚙️ Dependency
 Community Bridge - https://github.com/TheOrderFivem/community_bridge
